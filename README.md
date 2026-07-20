@@ -642,6 +642,6 @@ Projekt nie zawiera jeszcze oficjalnego pliku licencji. W sprawie warunków uży
 
 <div align="center">
 
-Made with 💛 by **Aysenur Kiymaz** · VIZJA University, Warsaw · 2026
+Made with  by **Aysenur Kiymaz** · VIZJA University, Warsaw · 2026
 
 </div>
