@@ -1,7 +1,5 @@
 <div align="center">
 
-<img src="public/img/glowhub-logo-removebg-preview.png" alt="GlowHub Logo" width="220"/>
-
 # ✨ GlowHub — Beauty Center Appointment System
 
 **A full-featured, multilingual appointment booking platform built with Node.js, Express, MongoDB, and EJS.**
