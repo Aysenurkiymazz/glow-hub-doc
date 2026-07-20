@@ -6,13 +6,27 @@
 
 **A full-featured, multilingual appointment booking platform built with Node.js, Express, MongoDB, and EJS.**
 
-Developer: **Aysenur Kiymaz**
+Developer: **Aysenur Kiymaz** · VIZJA University, Warsaw · 2026
+
+---
+
+[![Node.js](https://img.shields.io/badge/Node.js-18+-339933?style=flat&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Express](https://img.shields.io/badge/Express.js-5.x-000000?style=flat&logo=express&logoColor=white)](https://expressjs.com/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?style=flat&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+[![Firebase](https://img.shields.io/badge/Firebase-Auth-FFCA28?style=flat&logo=firebase&logoColor=black)](https://firebase.google.com/)
+[![Bootstrap](https://img.shields.io/badge/Bootstrap-5-7952B3?style=flat&logo=bootstrap&logoColor=white)](https://getbootstrap.com/)
+
+---
+
+🇬🇧 [English](#-english) · 🇵🇱 [Polski](#-polski)
 
 </div>
 
 ---
 
-## 📖 Table of Contents
+## 🇬🇧 English
+
+### 📖 Table of Contents
 
 - [About the Project](#-about-the-project)
 - [Key Features](#-key-features)
@@ -29,11 +43,11 @@ Developer: **Aysenur Kiymaz**
 
 ---
 
-## 🌸 About the Project
+### 🌸 About the Project
 
-**GlowHub** is a web-based appointment reservation system designed to digitalize branch, service, and appointment management for beauty centers. Users can browse available time slots by selecting a branch and service, create appointments, edit or cancel existing ones, and sign in via email/password or Google account.
+**GlowHub** is a web-based appointment reservation system designed to digitalize branch, service, and appointment management for beauty and aesthetics centers. The platform serves a center operating across three cities in Poland — Warsaw, Kraków, and Wrocław.
 
-The project follows the **MVC (Model-View-Controller)** architecture and supports multilingual content in **English and Polish (EN/PL)**.
+Users can browse available time slots by selecting a branch and service, create appointments, edit or cancel existing ones, and sign in via email/password or Google account. The project follows the **MVC (Model-View-Controller)** architecture and provides multilingual content in **English and Polish (EN/PL)**.
 
 | Feature | Description |
 |---|---|
@@ -47,20 +61,21 @@ The project follows the **MVC (Model-View-Controller)** architecture and support
 
 ---
 
-## 🚀 Key Features
+### 🚀 Key Features
 
-- 🔐 **Secure Authentication** — Password hashing with `bcrypt`, session-based authentication
-- 🔑 **Google Sign-In** — Firebase Authentication integration
-- 📅 **Smart Appointment System** — Automatic time slot generation based on service duration, with booked slots filtered out
-- 🏬 **Multi-Branch Support** — Each branch has its own address, phone number and services
-- 🌐 **Multilingual Structure** — `res.locals.t()` translation function for EN/PL interface
+- 🔐 **Secure Authentication** — Password hashing with `bcrypt` (10 salt rounds), session-based authentication
+- 🔑 **Google Sign-In** — Firebase Authentication integration via popup flow
+- 📅 **Smart Appointment System** — Automatic time slot generation based on service duration (09:00–18:00), with booked slots filtered in real time
+- 🏬 **Multi-Branch Support** — Each branch has its own address, phone number and service catalog
+- 🌐 **Multilingual Structure** — `res.locals.t()` translation function for EN/PL interface texts
 - 📖 **Blog Module** — Informative articles on skincare, mesotherapy, lymphatic drainage and more
 - 🖼️ **Gallery & FAQ Pages** — Corporate presentation and frequently asked questions
-- ⚙️ **Seed Scripts** — Load branch and service data into the database with a single command
+- ⚙️ **Seed Scripts** — Populate branch and service data into the database with a single command
+- 🔒 **Double Booking Prevention** — Server-level conflict check using MongoDB `$ne` operator
 
 ---
 
-## 🖼️ Screenshots
+### 🖼️ Screenshots
 
 | Home | Booking |
 |:---:|:---:|
@@ -84,9 +99,7 @@ The project follows the **MVC (Model-View-Controller)** architecture and support
 
 ---
 
-## 👥 User Roles
-
-The application currently operates with a **single-role structure** — there is no separate admin panel. Roles and their permissions are as follows:
+### 👥 User Roles
 
 | Role | Access | Permissions |
 |---|---|---|
@@ -95,58 +108,9 @@ The application currently operates with a **single-role structure** — there is
 
 > 💡 **Note:** The `User` data model does not include a `role` field, so there is currently no admin role. To add an admin panel in the future, a `role` field should be added to the `User` model along with an authorization middleware.
 
-### 🔄 User Flow
-
-```mermaid
-flowchart TD
-    Start([User Enters Site]) --> Guest[Role: Guest]
-    Guest --> Browse[Browse public pages]
-    Browse --> WantsBooking{Wants to\nbook?}
-    WantsBooking -- No --> Browse
-    WantsBooking -- Yes --> HasSession{Active session?\nsession.userId}
-
-    HasSession -- Yes --> Book[Continue to booking]
-    HasSession -- No --> AuthChoice{Register or\nSign in?}
-
-    AuthChoice -- Register --> Register[POST /register\nbcrypt password hashing]
-    Register --> RegOK{Email\nalready used?}
-    RegOK -- Yes --> RegisterErr[Error: email already registered]
-    RegisterErr --> AuthChoice
-    RegOK -- No --> CreateUser[(User created)]
-    CreateUser --> Login
-
-    AuthChoice -- Sign In --> Login[POST /login\nbcrypt.compare]
-    AuthChoice -- Google Sign-In --> GoogleAuth[Firebase ID Token verification]
-    GoogleAuth --> FindOrCreate[(User found / created)]
-    FindOrCreate --> SetSession
-
-    Login --> LoginOK{Credentials\ncorrect?}
-    LoginOK -- No --> LoginErr[Error: wrong email/password]
-    LoginErr --> AuthChoice
-    LoginOK -- Yes --> SetSession[session.userId and session.userName set]
-
-    SetSession --> Member[Role: Member]
-    Member --> Book
-    Book --> SelectBranchService[Select branch and service]
-    SelectBranchService --> GetSlots[GET /slots - fetch available times\nslotGenerator + filter booked slots]
-    GetSlots --> ConfirmBooking[POST /book/:branchId/:serviceId]
-    ConfirmBooking --> ConflictCheck{Past date or\nslot taken?}
-    ConflictCheck -- Yes --> BookingErr[Error shown, return to slot selection]
-    BookingErr --> GetSlots
-    ConflictCheck -- No --> Created[(Appointment created - status: confirmed)]
-    Created --> MyAppointments[Listed at /appointments]
-    MyAppointments --> ManageChoice{What does\nuser want?}
-    ManageChoice -- Edit --> EditAppt[GET/POST /appointments/:id/edit-update]
-    ManageChoice -- Cancel --> CancelAppt[GET /appointments/:id/delete]
-    ManageChoice -- Sign Out --> Logout[GET /logout\nsession.destroy]
-    Logout --> Guest
-```
-
 ---
 
-## ⚙️ System Architecture
-
-### General Flow
+### ⚙️ System Architecture
 
 ```mermaid
 flowchart TD
@@ -163,110 +127,96 @@ flowchart TD
     H -.Google Login.-> K[Firebase Admin SDK]
 ```
 
-### How It Works
+**How It Works:**
 
-1. **Request Handling:** All requests reach the Express server through `app.js`.
-2. **Session Management:** Session data is stored in MongoDB via `express-session` + `connect-mongo` and passed to all views through `res.locals.session`.
-3. **Language Detection:** If no `lang` is set in the session, it defaults to `en`; translations are provided via `res.locals.t()` from `config/languages.json`. Users can switch languages via `/toggle-language/:lang`.
-4. **Authorization:** Appointment-related routes are protected by `middlewares/loginRequired.js`; users without `userId` in their session are redirected to `/login`.
-5. **Business Logic:** The relevant controller (auth, branch, service, appointment) handles all database operations via Mongoose models.
-6. **Slot Generation:** `utils/slotGenerator.js` calculates available time slots based on service duration; `appointmentController.getSlots` filters out already-booked slots for the selected date.
-7. **View Rendering:** Result data is passed to EJS templates and rendered as HTML for the user.
-8. **Google Sign-In (optional flow):** The Firebase ID token obtained client-side is sent to `/google-login`; it is verified server-side with `firebase-admin`, and the user is found or created in the database.
+1. All requests reach the Express server through `app.js`
+2. Session data is stored in MongoDB via `express-session` + `connect-mongo`
+3. Language is determined from the session; defaults to `en` if not set
+4. Appointment-related routes are protected by `loginRequired` middleware
+5. Controllers handle all business logic via Mongoose models
+6. `utils/slotGenerator.js` calculates available slots; booked ones are filtered out
+7. Results are rendered via EJS templates and returned to the browser
+8. Google sign-in: Firebase ID token is verified server-side via `firebase-admin`
 
 ---
 
-## 📁 Project Structure
+### 📁 Project Structure
 
 ```
 glow-hub/
-├── app.js                     # Application entry point (Express setup, middleware, route registration)
-├── seed-branches.js           # Script to seed branch data into the database
-├── seed-services.js           # Script to seed service data into the database
-│
+├── app.js
+├── seed-branches.js
+├── seed-services.js
 ├── config/
-│   ├── db.js                  # MongoDB connection function
-│   ├── firebaseConfig.js      # Firebase (client) configuration
-│   ├── firebaseServiceAccount.json  # Firebase Admin SDK service account
-│   └── languages.json         # Multilingual translation dictionary (EN/PL)
-│
+│   ├── db.js
+│   ├── firebaseConfig.js
+│   ├── firebaseServiceAccount.json
+│   └── languages.json
 ├── controllers/
-│   ├── authController.js      # Register, login, logout, Google login, dashboard
-│   ├── branchController.js    # Branch listing and detail operations
-│   ├── serviceController.js   # Service listing operations
-│   └── appointmentController.js  # Appointment creation, editing, cancellation, slot calculation
-│
+│   ├── authController.js
+│   ├── branchController.js
+│   ├── serviceController.js
+│   └── appointmentController.js
 ├── middlewares/
-│   └── loginRequired.js       # Session check middleware
-│
+│   └── loginRequired.js
 ├── models/
-│   ├── User.js                # User schema
-│   ├── Branch.js              # Branch schema
-│   ├── Service.js             # Service schema
-│   └── Appointment.js         # Appointment schema
-│
+│   ├── User.js
+│   ├── Branch.js
+│   ├── Service.js
+│   └── Appointment.js
 ├── routes/
 │   ├── authRoutes.js
 │   ├── branchRoutes.js
 │   ├── serviceRoutes.js
 │   ├── appointmentRoutes.js
 │   └── pagesRoutes.js
-│
 ├── utils/
-│   └── slotGenerator.js       # Appointment time slot generation algorithm
-│
+│   └── slotGenerator.js
 ├── public/
-│   ├── css/                   # style.css, login-register.css
-│   └── img/                   # Images, logo, service/blog cover images
-│
+│   ├── css/
+│   └── img/
 └── views/
-    ├── partials/              # header.ejs, footer.ejs, appointment-list.ejs
-    ├── services/              # 8 service detail pages
+    ├── partials/
+    ├── services/
     ├── home.ejs, login.ejs, register.ejs, dashboard.ejs
-    ├── book-appointment.ejs, appointment-book.ejs, appointment-edit.ejs, appointments.ejs
-    ├── blog-post-*.ejs        # 6 blog posts
+    ├── book-appointment.ejs, appointments.ejs, appointment-edit.ejs
+    ├── blog-post-*.ejs
     ├── branches.ejs, faq.ejs, gallery.ejs, contact.ejs, about.ejs
     └── 404.ejs, privacy-policy.ejs, terms-of-service.ejs
 ```
 
 ---
 
-## 🧩 Technologies & Libraries
+### 🧩 Technologies & Libraries
 
-### Backend
+#### Backend
 
 | Technology | Version | Description |
 |---|---|---|
 | [Node.js](https://nodejs.org/) | 18+ | Server-side JavaScript runtime |
 | [Express.js](https://expressjs.com/) | ^5.2.1 | Web framework for routing and middleware |
-| [MongoDB](https://www.mongodb.com/) | — | NoSQL database (users, appointments, services, branches) |
-| [Mongoose](https://mongoosejs.com/) | ^9.3.0 | ODM for MongoDB (schema/model management) |
+| [MongoDB](https://www.mongodb.com/) | — | NoSQL database |
+| [Mongoose](https://mongoosejs.com/) | ^9.3.0 | ODM for MongoDB |
 | [express-session](https://www.npmjs.com/package/express-session) | ^1.19.0 | User session management |
 | [connect-mongo](https://www.npmjs.com/package/connect-mongo) | ^6.0.0 | Persistent session storage in MongoDB |
 | [bcrypt](https://www.npmjs.com/package/bcrypt) | ^6.0.0 | Secure password hashing |
 | [firebase](https://firebase.google.com/) | ^12.11.0 | Client-side Google authentication |
-| [firebase-admin](https://firebase.google.com/docs/admin/setup) | ^13.7.0 | Server-side Google ID token verification |
-| [method-override](https://www.npmjs.com/package/method-override) | ^3.0.0 | PUT/DELETE method support in HTML forms |
+| [firebase-admin](https://firebase.google.com/docs/admin/setup) | ^13.7.0 | Server-side token verification |
+| [method-override](https://www.npmjs.com/package/method-override) | ^3.0.0 | PUT/DELETE support in HTML forms |
 | [dotenv](https://www.npmjs.com/package/dotenv) | ^17.3.1 | Environment variable management |
 
-### Frontend
+#### Frontend
 
 | Technology | Description |
 |---|---|
-| [EJS](https://ejs.co/) | Server-side dynamic HTML rendering (view engine) |
+| [EJS](https://ejs.co/) | Server-side dynamic HTML rendering |
 | [Bootstrap 5](https://getbootstrap.com/) (CDN) | Responsive UI components |
 | [Font Awesome 6](https://fontawesome.com/) (CDN) | Icon library |
-| [Google Fonts](https://fonts.google.com/) (CDN) | Inter, Playfair Display, Lora typefaces |
-
-### Development Tools
-
-| Tool | Description |
-|---|---|
-| [nodemon](https://www.npmjs.com/package/nodemon) | Auto-restarts the server on code changes (development only) |
+| [Google Fonts](https://fonts.google.com/) (CDN) | Inter, Playfair Display, Lora |
 
 ---
 
-## 🗄️ Data Models
+### 🗄️ Data Models
 
 **User**
 
@@ -306,60 +256,52 @@ glow-hub/
 | branch | ObjectId → Branch | Selected branch |
 | date | String | Appointment date |
 | time | String | Appointment time |
-| status | String | Appointment status (default: `confirmed`) |
+| status | String | Status (default: confirmed) |
 
 ---
 
-## 🔌 API / Route Table
+### 🔌 API / Route Table
 
 | Method | Endpoint | Description | Access |
 |---|---|---|---|
-| GET | `/` | Home page | Public |
-| GET / POST | `/register` | Register | Public |
-| GET / POST | `/login` | Sign in | Public |
-| POST | `/google-login` | Google sign-in | Public |
-| GET | `/logout` | Sign out | Member |
-| GET | `/dashboard` | User dashboard | Member |
-| GET | `/toggle-language/:lang` | Switch UI language (en/pl) | Public |
-| GET | `/services` | Service list | Public |
-| GET | `/services/:serviceName` | Service detail page | Public |
-| GET | `/branches/:branchId/services` | Branch services | Public |
-| GET | `/api/branches` | Branch list (JSON) | Public |
-| GET | `/appointments-book` | Booking start page | Member |
-| GET / POST | `/book/:branchId/:serviceId` | Create appointment | Member |
-| GET | `/appointments` | User's appointments | Member |
-| GET | `/appointments/:id/edit` | Edit appointment | Member |
-| POST | `/appointments/:id/update` | Update appointment | Member |
-| GET | `/appointments/:id/delete` | Cancel appointment | Member |
-| GET | `/slots` | Available appointment slots (JSON) | Public |
-| GET | `/gallery`, `/faq`, `/about`, `/contact` | Corporate pages | Public |
-| GET | `/blog/:slug` | Blog posts (6 total) | Public |
-| GET | `/privacy-policy`, `/terms-of-service` | Legal pages | Public |
+| GET | / | Home page | Public |
+| GET / POST | /register | Register | Public |
+| GET / POST | /login | Sign in | Public |
+| POST | /google-login | Google sign-in | Public |
+| GET | /logout | Sign out | Member |
+| GET | /dashboard | User dashboard | Member |
+| GET | /toggle-language/:lang | Switch UI language | Public |
+| GET | /services | Service list | Public |
+| GET | /services/:serviceName | Service detail | Public |
+| GET | /api/branches | Branch list (JSON) | Public |
+| GET | /appointments-book | Booking start page | Member |
+| GET / POST | /book/:branchId/:serviceId | Create appointment | Member |
+| GET | /appointments | User's appointments | Member |
+| GET | /appointments/:id/edit | Edit appointment | Member |
+| POST | /appointments/:id/update | Update appointment | Member |
+| GET | /appointments/:id/delete | Cancel appointment | Member |
+| GET | /slots | Available slots (JSON) | Public |
+| GET | /gallery, /faq, /about, /contact | Corporate pages | Public |
+| GET | /blog/:slug | Blog posts | Public |
 
 ---
 
-## 🛠️ Setup
+### 🛠️ Setup
 
-### Requirements
-
-- [Node.js](https://nodejs.org/) (v18 or higher)
-- [MongoDB](https://www.mongodb.com/) (local or MongoDB Atlas)
-- npm
-
-### Steps
+**Requirements:** Node.js 18+, MongoDB (local or Atlas), npm
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/<your-username>/glow-hub.git
-cd glow-hub
+git clone https://github.com/Aysenurkiymazz/glow-hub-doc.git
+cd glow-hub-doc
 
 # 2. Install dependencies
 npm install
 
-# 3. Create your .env file (see below)
+# 3. Create .env file
 
-# 4. Add your Firebase Admin SDK service account file
-#    as config/firebaseServiceAccount.json
+# 4. Add Firebase Admin SDK service account
+#    config/firebaseServiceAccount.json
 
 # 5. Seed the database
 node seed-branches.js
@@ -369,31 +311,337 @@ node seed-services.js
 npm run dev
 ```
 
-The app runs at [http://localhost:3000](http://localhost:3000) by default.
+App runs at **http://localhost:3000**
 
 ---
 
-## 🔐 Environment Variables
-
-Create a `.env` file in the root directory with the following variables:
+### 🔐 Environment Variables
 
 ```env
 MONGO_URI=your_mongodb_connection_string
 SESSION_SECRET=your_session_secret
 ```
 
-Firebase configuration is handled via `config/firebaseConfig.js` (client-side) and `config/firebaseServiceAccount.json` (server-side).
-
 ---
 
-## 📄 License
+### 📄 License
 
 This project does not currently include an official license file. Please contact the project owner for usage terms.
 
 ---
 
+<br/>
+
+---
+
+## 🇵🇱 Polski
+
+### 📖 Spis treści
+
+- [O projekcie](#-o-projekcie)
+- [Najważniejsze funkcje](#-najważniejsze-funkcje)
+- [Zrzuty ekranu](#-zrzuty-ekranu)
+- [Role użytkowników](#-role-użytkowników)
+- [Architektura systemu](#-architektura-systemu)
+- [Struktura projektu](#-struktura-projektu)
+- [Technologie i biblioteki](#-technologie-i-biblioteki)
+- [Modele danych](#-modele-danych)
+- [Tabela tras API](#-tabela-tras-api)
+- [Instalacja](#-instalacja)
+- [Zmienne środowiskowe](#-zmienne-środowiskowe)
+- [Licencja](#-licencja-1)
+
+---
+
+### 🌸 O projekcie
+
+**GlowHub** to webowa aplikacja do rezerwacji wizyt, zaprojektowana w celu cyfryzacji zarządzania oddziałami, usługami i rezerwacjami w centrach urody i estetyki. Platforma obsługuje centrum działające w trzech miastach Polski — Warszawie, Krakowie i Wrocławiu.
+
+Użytkownicy mogą przeglądać dostępne terminy, wybierając oddział i usługę, tworzyć rezerwacje, edytować lub anulować istniejące wizyty oraz logować się przez e-mail/hasło lub konto Google. Projekt został zbudowany w architekturze **MVC (Model-View-Controller)** i obsługuje treści w języku **angielskim i polskim (EN/PL)**.
+
+| Funkcja | Opis |
+|---|---|
+| 🧾 System rezerwacji | Dynamiczne generowanie slotów dla oddziału i usługi, kontrola kolizji |
+| 👤 Uwierzytelnianie | Rejestracja/logowanie e-mail + logowanie przez Google (Firebase) |
+| 🌍 Wielojęzyczny interfejs | Przełączanie języka na podstawie sesji (EN/PL) |
+| 🏢 Zarządzanie oddziałami | Wiele oddziałów, każdy z własnym katalogiem usług |
+| 💆 Katalog usług | Dedykowane strony szczegółowe dla 8 zabiegów |
+| 📝 Blog i treści | Artykuły informacyjne o urodzie i pielęgnacji skóry |
+| 📱 Responsywny design | Oparty na Bootstrap 5, dostosowany do urządzeń mobilnych |
+
+---
+
+### 🚀 Najważniejsze funkcje
+
+- 🔐 **Bezpieczne uwierzytelnianie** — Hashowanie haseł z `bcrypt` (10 rund soli), uwierzytelnianie oparte na sesjach
+- 🔑 **Logowanie przez Google** — Integracja z Firebase Authentication
+- 📅 **Inteligentny system rezerwacji** — Automatyczne generowanie slotów czasowych (09:00–18:00), zajęte terminy filtrowane w czasie rzeczywistym
+- 🏬 **Obsługa wielu oddziałów** — Każdy oddział ma własny adres, telefon i katalog usług
+- 🌐 **Struktura wielojęzyczna** — Funkcja tłumaczenia `res.locals.t()` dla interfejsu EN/PL
+- 📖 **Moduł bloga** — Artykuły o pielęgnacji skóry, mezoterapii, drenażu limfatycznym i inne
+- 🖼️ **Galeria i FAQ** — Prezentacja korporacyjna i często zadawane pytania
+- ⚙️ **Skrypty seed** — Załadowanie danych oddziałów i usług jednym poleceniem
+- 🔒 **Zapobieganie podwójnym rezerwacjom** — Kontrola kolizji na poziomie serwera z operatorem MongoDB `$ne`
+
+---
+
+### 🖼️ Zrzuty ekranu
+
+| Strona główna | Rezerwacja |
+|:---:|:---:|
+| ![Strona główna](image/gallery-page.png) | ![Rezerwacja](image/booking-page.png) |
+
+| Logowanie / Rejestracja | Usługi |
+|:---:|:---:|
+| ![Logowanie / Rejestracja](image/login-page.png) | ![Usługi](image/our-service-page.png) |
+
+| Szczegóły usługi | FAQ |
+|:---:|:---:|
+| ![Szczegóły usługi](image/service-details-page.png) | ![FAQ](image/questions-page.png) |
+
+| Galeria | Kontakt |
+|:---:|:---:|
+| ![Galeria](image/gallery-page.png) | ![Kontakt](image/contact-page.png) |
+
+| Moje wizyty | - |
+|:---:|:---:|
+| ![Moje wizyty](image/my-appointments-page.png) | - |
+
+---
+
+### 👥 Role użytkowników
+
+| Rola | Dostęp | Uprawnienia |
+|---|---|---|
+| **Gość** | Bez logowania | Przeglądanie publicznych stron; rejestracja i logowanie |
+| **Użytkownik** | Po logowaniu e-mail/hasłem lub przez Google | Tworzenie, przeglądanie, edycja i anulowanie własnych wizyt; dostęp do panelu |
+
+> 💡 **Uwaga:** Model danych `User` nie zawiera pola `role`, dlatego nie ma aktualnie roli administratora.
+
+---
+
+### ⚙️ Architektura systemu
+
+```mermaid
+flowchart TD
+    A[Przeglądarka] -->|Żądanie HTTP| B(Serwer Express.js)
+    B --> C{Middleware}
+    C --> D[express-session + connect-mongo]
+    C --> E[Middleware językowy]
+    C --> F[Middleware loginRequired]
+    B --> G[Trasy]
+    G --> H[Kontrolery]
+    H --> I[(MongoDB / Mongoose)]
+    H --> J[Widoki EJS]
+    J --> A
+    H -.Logowanie Google.-> K[Firebase Admin SDK]
+```
+
+**Jak działa aplikacja:**
+
+1. Wszystkie żądania trafiają do serwera Express przez `app.js`
+2. Dane sesji są przechowywane w MongoDB przez `express-session` + `connect-mongo`
+3. Język jest odczytywany z sesji; domyślnie `en`
+4. Trasy rezerwacji są chronione przez middleware `loginRequired`
+5. Kontrolery obsługują logikę biznesową przez modele Mongoose
+6. `utils/slotGenerator.js` oblicza dostępne sloty; zajęte są filtrowane
+7. Wyniki są renderowane przez szablony EJS
+8. Logowanie Google: token Firebase weryfikowany przez `firebase-admin`
+
+---
+
+### 📁 Struktura projektu
+
+```
+glow-hub/
+├── app.js
+├── seed-branches.js
+├── seed-services.js
+├── config/
+│   ├── db.js
+│   ├── firebaseConfig.js
+│   ├── firebaseServiceAccount.json
+│   └── languages.json
+├── controllers/
+│   ├── authController.js
+│   ├── branchController.js
+│   ├── serviceController.js
+│   └── appointmentController.js
+├── middlewares/
+│   └── loginRequired.js
+├── models/
+│   ├── User.js
+│   ├── Branch.js
+│   ├── Service.js
+│   └── Appointment.js
+├── routes/
+│   ├── authRoutes.js
+│   ├── branchRoutes.js
+│   ├── serviceRoutes.js
+│   ├── appointmentRoutes.js
+│   └── pagesRoutes.js
+├── utils/
+│   └── slotGenerator.js
+├── public/
+│   ├── css/
+│   └── img/
+└── views/
+    ├── partials/
+    ├── services/
+    ├── home.ejs, login.ejs, register.ejs, dashboard.ejs
+    ├── book-appointment.ejs, appointments.ejs, appointment-edit.ejs
+    ├── blog-post-*.ejs
+    ├── branches.ejs, faq.ejs, gallery.ejs, contact.ejs, about.ejs
+    └── 404.ejs, privacy-policy.ejs, terms-of-service.ejs
+```
+
+---
+
+### 🧩 Technologie i biblioteki
+
+#### Backend
+
+| Technologia | Wersja | Opis |
+|---|---|---|
+| [Node.js](https://nodejs.org/) | 18+ | Środowisko uruchomieniowe JavaScript |
+| [Express.js](https://expressjs.com/) | ^5.2.1 | Framework webowy |
+| [MongoDB](https://www.mongodb.com/) | — | Nierelacyjna baza danych |
+| [Mongoose](https://mongoosejs.com/) | ^9.3.0 | ODM dla MongoDB |
+| [express-session](https://www.npmjs.com/package/express-session) | ^1.19.0 | Zarządzanie sesjami |
+| [connect-mongo](https://www.npmjs.com/package/connect-mongo) | ^6.0.0 | Trwałe przechowywanie sesji |
+| [bcrypt](https://www.npmjs.com/package/bcrypt) | ^6.0.0 | Hashowanie haseł |
+| [firebase](https://firebase.google.com/) | ^12.11.0 | Uwierzytelnianie Google (klient) |
+| [firebase-admin](https://firebase.google.com/docs/admin/setup) | ^13.7.0 | Weryfikacja tokenów (serwer) |
+| [method-override](https://www.npmjs.com/package/method-override) | ^3.0.0 | PUT/DELETE w formularzach HTML |
+| [dotenv](https://www.npmjs.com/package/dotenv) | ^17.3.1 | Zmienne środowiskowe |
+
+#### Frontend
+
+| Technologia | Opis |
+|---|---|
+| [EJS](https://ejs.co/) | Dynamiczne generowanie HTML |
+| [Bootstrap 5](https://getbootstrap.com/) (CDN) | Responsywne komponenty UI |
+| [Font Awesome 6](https://fontawesome.com/) (CDN) | Biblioteka ikon |
+| [Google Fonts](https://fonts.google.com/) (CDN) | Inter, Playfair Display, Lora |
+
+---
+
+### 🗄️ Modele danych
+
+**User (Użytkownik)**
+
+| Pole | Typ | Opis |
+|---|---|---|
+| name | String | Imię |
+| email | String (unique) | E-mail |
+| password | String | Hasło (bcrypt) |
+| picture | String | Zdjęcie profilowe |
+| googleId | String | ID konta Google |
+| createdAt | Date | Data rejestracji |
+
+**Branch (Oddział)**
+
+| Pole | Typ | Opis |
+|---|---|---|
+| name | String | Nazwa |
+| city | String | Miasto |
+| address | String | Adres |
+| phone | String | Telefon |
+
+**Service (Usługa)**
+
+| Pole | Typ | Opis |
+|---|---|---|
+| name | String | Nazwa |
+| price | Number | Cena |
+| duration | Number | Czas trwania (min) |
+| branch | ObjectId → Branch | Oddział |
+
+**Appointment (Rezerwacja)**
+
+| Pole | Typ | Opis |
+|---|---|---|
+| user | ObjectId → User | Użytkownik |
+| service | ObjectId → Service | Usługa |
+| branch | ObjectId → Branch | Oddział |
+| date | String | Data |
+| time | String | Godzina |
+| status | String | Status (domyślnie: confirmed) |
+
+---
+
+### 🔌 Tabela tras API
+
+| Metoda | Endpoint | Opis | Dostęp |
+|---|---|---|---|
+| GET | / | Strona główna | Publiczny |
+| GET / POST | /register | Rejestracja | Publiczny |
+| GET / POST | /login | Logowanie | Publiczny |
+| POST | /google-login | Logowanie przez Google | Publiczny |
+| GET | /logout | Wylogowanie | Użytkownik |
+| GET | /dashboard | Panel | Użytkownik |
+| GET | /toggle-language/:lang | Zmiana języka | Publiczny |
+| GET | /services | Lista usług | Publiczny |
+| GET | /services/:serviceName | Szczegóły usługi | Publiczny |
+| GET | /api/branches | Lista oddziałów (JSON) | Publiczny |
+| GET | /appointments-book | Start rezerwacji | Użytkownik |
+| GET / POST | /book/:branchId/:serviceId | Tworzenie rezerwacji | Użytkownik |
+| GET | /appointments | Wizyty użytkownika | Użytkownik |
+| GET | /appointments/:id/edit | Edycja | Użytkownik |
+| POST | /appointments/:id/update | Aktualizacja | Użytkownik |
+| GET | /appointments/:id/delete | Anulowanie | Użytkownik |
+| GET | /slots | Dostępne sloty (JSON) | Publiczny |
+| GET | /gallery, /faq, /about, /contact | Strony firmowe | Publiczny |
+| GET | /blog/:slug | Blog | Publiczny |
+
+---
+
+### 🛠️ Instalacja
+
+**Wymagania:** Node.js 18+, MongoDB, npm
+
+```bash
+# 1. Sklonuj repozytorium
+git clone https://github.com/Aysenurkiymazz/glow-hub-doc.git
+cd glow-hub-doc
+
+# 2. Zainstaluj zależności
+npm install
+
+# 3. Utwórz plik .env
+
+# 4. Dodaj Firebase Admin SDK
+#    config/firebaseServiceAccount.json
+
+# 5. Wypełnij bazę danych
+node seed-branches.js
+node seed-services.js
+
+# 6. Uruchom aplikację
+npm run dev
+```
+
+Aplikacja działa pod adresem **http://localhost:3000**
+
+---
+
+### 🔐 Zmienne środowiskowe
+
+```env
+MONGO_URI=your_mongodb_connection_string
+SESSION_SECRET=your_session_secret
+```
+
+---
+
+### 📄 Licencja
+
+Projekt nie zawiera jeszcze oficjalnego pliku licencji. W sprawie warunków użycia skontaktuj się z właścicielką projektu.
+
+---
+
 <div align="center">
 
-Made with 💛 by **Aysenur Kiymaz**
+Made with 💛 by **Aysenur Kiymaz** · VIZJA University, Warsaw · 2026
 
 </div>
